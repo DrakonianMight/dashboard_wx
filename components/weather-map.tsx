@@ -37,7 +37,6 @@ export function WeatherMap({ selectedLocation, onLocationSelect, settings }: Wea
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)")
     setIsDarkMode(mediaQuery.matches)
-    
     const handler = (e: MediaQueryListEvent) => setIsDarkMode(e.matches)
     mediaQuery.addEventListener("change", handler)
     return () => mediaQuery.removeEventListener("change", handler)
@@ -47,20 +46,12 @@ export function WeatherMap({ selectedLocation, onLocationSelect, settings }: Wea
 
   const handleMapClick = useCallback((event: MapMouseEvent) => {
     const { lngLat } = event
-    onLocationSelect({
-      lat: lngLat.lat,
-      lng: lngLat.lng,
-    })
+    onLocationSelect({ lat: lngLat.lat, lng: lngLat.lng })
   }, [onLocationSelect])
 
   const handleMapMouseMove = useCallback((event: MapMouseEvent) => {
     const { lngLat, point } = event
-    setHoverCoords({
-      lat: lngLat.lat,
-      lng: lngLat.lng,
-      x: point.x,
-      y: point.y,
-    })
+    setHoverCoords({ lat: lngLat.lat, lng: lngLat.lng, x: point.x, y: point.y })
   }, [])
 
   const handleMapMouseLeave = useCallback(() => {
@@ -68,29 +59,15 @@ export function WeatherMap({ selectedLocation, onLocationSelect, settings }: Wea
   }, [])
 
   const handleCapitalClick = useCallback((capital: Capital) => {
-    onLocationSelect({
-      lat: capital.lat,
-      lng: capital.lng,
-      name: capital.name,
-      country: capital.country,
-    })
-
-    mapRef.current?.flyTo({
-      center: [capital.lng, capital.lat],
-      zoom: 6,
-      duration: 1000,
-    })
+    onLocationSelect({ lat: capital.lat, lng: capital.lng, name: capital.name, country: capital.country })
+    mapRef.current?.flyTo({ center: [capital.lng, capital.lat], zoom: 6, duration: 1000 })
   }, [onLocationSelect])
 
   return (
     <div className="relative h-full w-full">
       <Map
         ref={mapRef}
-        initialViewState={{
-          longitude: 134.0,
-          latitude: -25.0,
-          zoom: 3.5,
-        }}
+        initialViewState={{ longitude: 134.0, latitude: -25.0, zoom: 3.5 }}
         style={{ width: "100%", height: "100%" }}
         mapStyle={mapStyle}
         onClick={handleMapClick}
@@ -118,8 +95,8 @@ export function WeatherMap({ selectedLocation, onLocationSelect, settings }: Wea
               <div
                 className={`
                   w-2 h-2 rounded-full transition-all duration-200
-                  ${selectedLocation?.name === capital.name 
-                    ? "bg-primary scale-150 ring-2 ring-primary/50" 
+                  ${selectedLocation?.name === capital.name
+                    ? "bg-primary scale-150 ring-2 ring-primary/50"
                     : "bg-primary/80 group-hover:bg-primary group-hover:scale-125"
                   }
                 `}
@@ -129,54 +106,32 @@ export function WeatherMap({ selectedLocation, onLocationSelect, settings }: Wea
         ))}
 
         {selectedLocation && !selectedLocation.name && (
-          <Marker
-            longitude={selectedLocation.lng}
-            latitude={selectedLocation.lat}
-            anchor="center"
-          >
+          <Marker longitude={selectedLocation.lng} latitude={selectedLocation.lat} anchor="center">
             <div className="w-4 h-4 rounded-full bg-accent ring-2 ring-accent/50 animate-pulse" />
           </Marker>
         )}
       </Map>
 
-      {/* Hover tooltip showing lat/lng */}
       {hoverCoords && (
         <div
           className="absolute pointer-events-none bg-card/90 backdrop-blur-sm border border-border rounded px-2 py-1 text-xs text-muted-foreground shadow-md z-10"
-          style={{
-            left: hoverCoords.x + 12,
-            top: hoverCoords.y + 12,
-          }}
+          style={{ left: hoverCoords.x + 12, top: hoverCoords.y + 12 }}
         >
           {hoverCoords.lat.toFixed(4)}, {hoverCoords.lng.toFixed(4)}
         </div>
       )}
 
-      {/* Initial dialog when no location selected */}
       {!selectedLocation && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <Card className="pointer-events-auto bg-card/95 backdrop-blur-sm border-border shadow-lg max-w-sm mx-4">
             <CardContent className="p-6 text-center">
               <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="text-primary"
-                >
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
                   <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
                   <circle cx="12" cy="10" r="3" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">
-                Select a Location
-              </h3>
+              <h3 className="text-lg font-semibold text-foreground mb-2">Select a Location</h3>
               <p className="text-sm text-muted-foreground">
                 Click anywhere on the map or select a city to view weather forecasts for that location.
               </p>
@@ -185,7 +140,6 @@ export function WeatherMap({ selectedLocation, onLocationSelect, settings }: Wea
         </div>
       )}
 
-      {/* Location info card */}
       {selectedLocation && (
         <div className="absolute top-4 left-4 bg-card/95 backdrop-blur-sm border border-border rounded-lg p-3 shadow-lg">
           <p className="text-sm font-medium text-foreground">

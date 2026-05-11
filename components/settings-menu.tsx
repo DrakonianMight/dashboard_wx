@@ -3,6 +3,7 @@
 import { Settings, commonTimezones, mapStyles, windSpeedUnits, WindSpeedUnit, MapStyle } from "@/lib/weather-types"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -173,8 +174,22 @@ export function SettingsMenu({ settings, onSettingsChange }: SettingsMenuProps) 
           </div>
         </ScrollArea>
 
-        <div className="px-4 py-3 border-t border-border mt-auto">
-          <p className="text-[10px] text-muted-foreground text-center">
+        <div className="px-4 py-3 border-t border-border mt-auto space-y-2">
+          <SettingsSection title="API Key">
+            <div className="space-y-1">
+              <Input
+                type="password"
+                placeholder="Open-Meteo API key (optional)"
+                value={settings.apiKey ?? ""}
+                onChange={(e) => onSettingsChange({ ...settings, apiKey: e.target.value || undefined })}
+                className="h-8 text-sm font-mono"
+              />
+              <p className="text-[10px] text-muted-foreground">
+                Leave blank to use the free endpoints. Providing a key switches to commercial endpoints.
+              </p>
+            </div>
+          </SettingsSection>
+          <p className="text-[10px] text-muted-foreground text-center pt-1">
             Data from Open-Meteo API
           </p>
         </div>
