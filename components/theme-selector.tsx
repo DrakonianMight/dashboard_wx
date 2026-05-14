@@ -1,7 +1,7 @@
 "use client"
 
 import { ThemeId, weatherThemes } from "@/lib/weather-types"
-import { Cloud, Waves, ChevronDown, Check } from "lucide-react"
+import { Cloud, Waves, ChevronDown, Check, TriangleAlert } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,6 +26,7 @@ const THEME_ICONS: Record<ThemeId, React.ReactNode> = {
   weather:    <Cloud className="h-4 w-4" />,
   renewables: <SolarPanelIcon className="h-4 w-4" />,
   maritime:   <Waves className="h-4 w-4" />,
+  risk:       <TriangleAlert className="h-4 w-4" />,
 }
 
 interface ThemeSelectorProps {

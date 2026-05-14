@@ -25,6 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { RiskChart, RiskConfig } from "@/components/risk-chart"
 
 interface WeatherChartProps {
   data: ChartDataPoint[]
@@ -39,6 +40,11 @@ interface WeatherChartProps {
   selectedModels: string[]
   windSpeedUnit: WindSpeedUnit
   temperatureUnit: "celsius" | "fahrenheit"
+  // Risk theme
+  isRiskTheme?: boolean
+  poeData?: ChartDataPoint[]
+  riskConfig?: RiskConfig
+  onRiskConfigChange?: (config: RiskConfig) => void
 }
 
 const modelColors: Record<string, string> = {
@@ -88,7 +94,32 @@ export function WeatherChart({
   selectedModels,
   windSpeedUnit,
   temperatureUnit,
+  isRiskTheme,
+  poeData,
+  riskConfig,
+  onRiskConfigChange,
 }: WeatherChartProps) {
+  if (isRiskTheme && riskConfig && onRiskConfigChange) {
+    return (
+      <RiskChart
+        data={poeData ?? []}
+        parameter={parameter}
+        themeParameters={themeParameters}
+        onParameterChange={onParameterChange}
+        riskConfig={riskConfig}
+        onRiskConfigChange={onRiskConfigChange}
+        onToggleModelSelector={onToggleModelSelector}
+        showModelSelector={showModelSelector}
+        isLoading={isLoading}
+        locationName={locationName}
+        timezone={timezone}
+        selectedModels={selectedModels}
+        windSpeedUnit={windSpeedUnit}
+        temperatureUnit={temperatureUnit}
+      />
+    )
+  }
+
   const isPrecipitation = parameter.id === "precipitation"
   const unit = getParameterUnit(parameter, windSpeedUnit, temperatureUnit)
 

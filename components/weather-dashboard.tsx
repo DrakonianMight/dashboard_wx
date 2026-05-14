@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useRef, useEffect } from "react"
+import { useState, useCallback, useRef, useEffect, useMemo } from "react"
 import useSWR from "swr"
 import { ChevronDown, ChevronUp } from "lucide-react"
 import { WeatherMap } from "./weather-map"
@@ -23,8 +23,10 @@ import {
   processMultiModelChartData,
   processChartData,
   aggregatePrecipitationData,
+  computeProbabilityOfExceedance,
 } from "@/lib/weather-api"
 import { weatherModels } from "@/lib/weather-types"
+import { RiskConfig } from "@/components/risk-chart"
 
 const defaultSettings: Settings = {
   temperatureUnit: "celsius",
@@ -95,6 +97,7 @@ export function WeatherDashboard() {
   const [activeTheme, setActiveTheme]             = useState<ThemeId>("weather")
   const [showModelSelector, setShowModelSelector] = useState(false)
   const [chartVisible, setChartVisible]           = useState(true)
+  const [riskConfig, setRiskConfig]               = useState<RiskConfig>({ threshold: 25, direction: "above" })
   const resizeRef = useRef<HTMLDivElement>(null)
 
   const themeParams = weatherThemes.find(t => t.id === activeTheme)?.parameters ?? []
@@ -104,6 +107,12 @@ export function WeatherDashboard() {
     setActiveTheme(theme)
     const params = weatherThemes.find(t => t.id === theme)?.parameters ?? []
     if (params.length > 0) setSelectedParameter(params[0])
+    if (theme === "risk") {
+      setSettings(s => {
+        const hasEnsemble = s.selectedModels.some(id => weatherModels.find(m => m.id === id)?.type === "ensemble")
+        return hasEnsemble ? s : { ...s, selectedModels: ["ecmwf_ifs025_ensemble"] }
+      })
+    }
   }, [])
 
   const { data: chartData, isLoading } = useSWR(
@@ -138,6 +147,11 @@ export function WeatherDashboard() {
   const handleLocationSelect  = useCallback((location: SelectedLocation) => setSelectedLocation(location), [])
   const handleParameterChange = useCallback((parameter: WeatherParameter) => setSelectedParameter(parameter), [])
   const handleSettingsChange  = useCallback((newSettings: Settings) => setSettings(newSettings), [])
+
+  const poeData = useMemo(() => {
+    if (activeTheme !== "risk" || !chartData?.length) return []
+    return computeProbabilityOfExceedance(chartData, riskConfig.threshold, riskConfig.direction)
+  }, [chartData, riskConfig.threshold, riskConfig.direction, activeTheme])
 
   // Resize drag — mouse
   useEffect(() => {
@@ -236,6 +250,10 @@ export function WeatherDashboard() {
                 selectedModels={settings.selectedModels}
                 windSpeedUnit={settings.windSpeedUnit}
                 temperatureUnit={settings.temperatureUnit}
+                isRiskTheme={activeTheme === "risk"}
+                poeData={poeData}
+                riskConfig={riskConfig}
+                onRiskConfigChange={setRiskConfig}
               />
             </div>
           )}

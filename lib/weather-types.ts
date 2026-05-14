@@ -16,7 +16,7 @@ export const windSpeedUnits: { value: WindSpeedUnit; label: string; symbol: stri
 
 // ─── Themes ────────────────────────────────────────────────────────────────
 
-export type ThemeId = "weather" | "renewables" | "maritime"
+export type ThemeId = "weather" | "renewables" | "maritime" | "risk"
 
 export interface WeatherTheme {
   id: ThemeId
@@ -60,10 +60,21 @@ const maritimeParameters: WeatherParameter[] = [
   { id: "wind_speed_80m",       name: "Wind 80m",        unit: "km/h",color: "hsl(260,60%,60%)", chartType: "line" },
 ]
 
+const riskParameters: WeatherParameter[] = [
+  { id: "temperature_2m",       name: "Temperature",   unit: "°C",   color: "var(--chart-1)", chartType: "line" },
+  { id: "relative_humidity_2m", name: "Humidity",      unit: "%",    color: "var(--chart-2)", chartType: "line" },
+  { id: "precipitation",        name: "Precipitation", unit: "mm",   color: "var(--chart-3)", chartType: "bar" },
+  { id: "wind_speed_10m",       name: "Wind 10m",      unit: "km/h", color: "var(--chart-4)", chartType: "line" },
+  { id: "wind_speed_80m",       name: "Wind 80m",      unit: "km/h", color: "hsl(260,60%,60%)", chartType: "line" },
+  { id: "wind_speed_120m",      name: "Wind 120m",     unit: "km/h", color: "hsl(280,60%,55%)", chartType: "line" },
+  { id: "surface_pressure",     name: "Pressure",      unit: "hPa",  color: "var(--chart-5)", chartType: "line" },
+]
+
 export const weatherThemes: WeatherTheme[] = [
   { id: "weather",    name: "Weather",    parameters: weatherParameters,    apiType: "forecast" },
   { id: "renewables", name: "Renewables", parameters: renewablesParameters, apiType: "forecast" },
   { id: "maritime",   name: "Maritime",   parameters: maritimeParameters,   apiType: "marine" },
+  { id: "risk",       name: "Risk",       parameters: riskParameters,       apiType: "forecast" },
 ]
 
 // Re-export the weather parameters array so existing code doesn't break

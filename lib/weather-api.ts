@@ -31,6 +31,7 @@ const THEME_PARAMS: Record<ThemeId, string> = {
   renewables: "temperature_2m,shortwave_radiation,direct_radiation,diffuse_radiation,wind_speed_10m,wind_speed_80m,wind_speed_120m,wind_speed_180m,surface_pressure",
   // maritime: wind params come from forecast, wave params from marine API
   maritime:   "temperature_2m,wind_speed_10m,wind_speed_80m,precipitation,surface_pressure",
+  risk:       "temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m,wind_speed_80m,wind_speed_120m,surface_pressure",
 }
 
 const MARINE_PARAMS = "wave_height,wave_direction,wave_period,swell_wave_height,swell_wave_direction,swell_wave_period,wind_wave_height"
@@ -410,4 +411,29 @@ export function formatTimeShort(isoTime: string, timezone: string): string {
       month: "short", day: "numeric", hour: "2-digit", hour12: false,
     })
   }
+}
+
+export function computeProbabilityOfExceedance(
+  points: ChartDataPoint[],
+  threshold: number,
+  direction: "above" | "below",
+): ChartDataPoint[] {
+  const timeMap = new Map<string, number[]>()
+  for (const p of points) {
+    if (!timeMap.has(p.time)) timeMap.set(p.time, [])
+    timeMap.get(p.time)!.push(p.value)
+  }
+  const result: ChartDataPoint[] = []
+  timeMap.forEach((members, time) => {
+    const count = direction === "above"
+      ? members.filter(v => v >= threshold).length
+      : members.filter(v => v <= threshold).length
+    result.push({
+      time,
+      value:   Math.round(count / members.length * 100),
+      type:    "forecast" as const,
+      modelId: "ensemble_poe",
+    })
+  })
+  return result.sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime())
 }
