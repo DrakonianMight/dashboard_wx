@@ -1,8 +1,13 @@
 "use client"
 
 import { ThemeId, weatherThemes } from "@/lib/weather-types"
-import { Cloud, Waves } from "lucide-react"
-import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip"
+import { Cloud, Waves, ChevronDown, Check } from "lucide-react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 function SolarPanelIcon({ className }: { className?: string }) {
   return (
@@ -18,55 +23,41 @@ function SolarPanelIcon({ className }: { className?: string }) {
 }
 
 const THEME_ICONS: Record<ThemeId, React.ReactNode> = {
-  weather:    <Cloud className="h-5 w-5" />,
-  renewables: <SolarPanelIcon className="h-5 w-5" />,
-  maritime:   <Waves className="h-5 w-5" />,
+  weather:    <Cloud className="h-4 w-4" />,
+  renewables: <SolarPanelIcon className="h-4 w-4" />,
+  maritime:   <Waves className="h-4 w-4" />,
 }
 
 interface ThemeSelectorProps {
   activeTheme: ThemeId
   onThemeChange: (theme: ThemeId) => void
-  compact?: boolean
 }
 
-export function ThemeSelector({ activeTheme, onThemeChange, compact = true }: ThemeSelectorProps) {
+export function ThemeSelector({ activeTheme, onThemeChange }: ThemeSelectorProps) {
   return (
-    <div className={`fixed left-4 z-50 flex flex-col gap-2 ${compact ? "top-32" : "top-20"}`}>
-      {weatherThemes.map((theme) => {
-        const isActive = activeTheme === theme.id
-        const baseClass = `
-          flex items-center justify-center gap-2
-          border shadow-md transition-all duration-200
-          ${compact
-            ? "w-10 h-10 rounded-full"
-            : "h-10 px-3 rounded-lg"
-          }
-          ${isActive
-            ? "bg-primary text-primary-foreground border-primary scale-105"
-            : "bg-card/90 text-muted-foreground border-border hover:bg-accent hover:text-foreground backdrop-blur-sm"
-          }
-        `
-
-        if (compact) {
-          return (
-            <Tooltip key={theme.id}>
-              <TooltipTrigger asChild>
-                <button onClick={() => onThemeChange(theme.id)} className={baseClass}>
-                  {THEME_ICONS[theme.id]}
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="right">{theme.name}</TooltipContent>
-            </Tooltip>
-          )
-        }
-
-        return (
-          <button key={theme.id} onClick={() => onThemeChange(theme.id)} className={baseClass}>
-            {THEME_ICONS[theme.id]}
-            <span className="text-sm font-medium whitespace-nowrap">{theme.name}</span>
+    <div className="fixed left-4 top-4 z-50">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button className="flex items-center gap-2 h-9 px-3 rounded-lg bg-card/95 backdrop-blur-sm border border-border shadow-md text-sm font-medium text-foreground hover:bg-accent transition-colors">
+            {THEME_ICONS[activeTheme]}
+            <span>Forecast Themes</span>
+            <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
           </button>
-        )
-      })}
+        </DropdownMenuTrigger>
+        <DropdownMenuContent side="bottom" align="start" className="w-44">
+          {weatherThemes.map((theme) => (
+            <DropdownMenuItem
+              key={theme.id}
+              onClick={() => onThemeChange(theme.id)}
+              className="flex items-center gap-2 cursor-pointer"
+            >
+              {THEME_ICONS[theme.id]}
+              <span className="flex-1">{theme.name}</span>
+              {activeTheme === theme.id && <Check className="h-3.5 w-3.5 text-primary" />}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   )
 }

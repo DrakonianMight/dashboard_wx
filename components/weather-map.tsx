@@ -15,6 +15,7 @@ interface WeatherMapProps {
   selectedLocation: SelectedLocation | null
   onLocationSelect: (location: SelectedLocation) => void
   settings: Settings
+  onSettingsChange: (s: Settings) => void
 }
 
 function getMapStyleUrl(mapStyle: MapStyle, isDarkMode: boolean): string {
@@ -33,17 +34,22 @@ function getMapStyleUrl(mapStyle: MapStyle, isDarkMode: boolean): string {
   }
 }
 
-export function WeatherMap({ selectedLocation, onLocationSelect, settings }: WeatherMapProps) {
+export function WeatherMap({ selectedLocation, onLocationSelect, settings, onSettingsChange }: WeatherMapProps) {
   const mapRef = useRef<MapRef>(null)
   const [isDarkMode, setIsDarkMode] = useState(false)
   const [hoverCoords, setHoverCoords] = useState<{ lat: number; lng: number; x: number; y: number } | null>(null)
   const [introDismissed, setIntroDismissed] = useState(false)
-  const { radarFrames, radarFrameIndex, layers } = useMapTimeStore()
+  const { radarFrames, radarFrameIndex, layers, satelliteDate } = useMapTimeStore()
 
   const currentRadarFrame = radarFrames[radarFrameIndex]
   const radarTileUrl = currentRadarFrame
     ? `https://tilecache.rainviewer.com${currentRadarFrame.path}/256/{z}/{x}/{y}/2/1_1.png`
     : null
+
+  const satelliteTileUrl =
+    `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/` +
+    `MODIS_Terra_CorrectedReflectance_TrueColor/default/` +
+    `${satelliteDate}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg`
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)")
@@ -122,6 +128,23 @@ export function WeatherMap({ selectedLocation, onLocationSelect, settings }: Wea
           </Marker>
         )}
 
+        {layers.satellite.visible && (
+          <Source
+            id="satellite"
+            type="raster"
+            tiles={[satelliteTileUrl]}
+            tileSize={256}
+            maxzoom={9}
+            attribution="© NASA GIBS"
+          >
+            <Layer
+              id="satellite-layer"
+              type="raster"
+              paint={{ "raster-opacity": layers.satellite.opacity }}
+            />
+          </Source>
+        )}
+
         {layers.radar.visible && radarTileUrl && (
           <Source
             id="radar"
@@ -139,7 +162,7 @@ export function WeatherMap({ selectedLocation, onLocationSelect, settings }: Wea
         )}
       </Map>
 
-      <LayerManager />
+      <LayerManager settings={settings} onSettingsChange={onSettingsChange} />
       <TimeController />
 
       {hoverCoords && (
@@ -176,19 +199,6 @@ export function WeatherMap({ selectedLocation, onLocationSelect, settings }: Wea
         </div>
       )}
 
-      {selectedLocation && (
-        <div className="absolute top-4 left-4 bg-card/95 backdrop-blur-sm border border-border rounded-lg p-3 shadow-lg">
-          <p className="text-sm font-medium text-foreground">
-            {selectedLocation.name || "Custom Location"}
-          </p>
-          {selectedLocation.country && (
-            <p className="text-xs text-muted-foreground">{selectedLocation.country}</p>
-          )}
-          <p className="text-xs text-muted-foreground mt-1">
-            {selectedLocation.lat.toFixed(4)}, {selectedLocation.lng.toFixed(4)}
-          </p>
-        </div>
-      )}
     </div>
   )
 }

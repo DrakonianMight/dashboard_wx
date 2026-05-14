@@ -172,8 +172,7 @@ export function WeatherDashboard() {
 
   return (
     <div className="h-screen w-screen flex flex-col overflow-hidden bg-background text-foreground">
-      <SettingsMenu settings={settings} onSettingsChange={handleSettingsChange} />
-      <ThemeSelector activeTheme={activeTheme} onThemeChange={handleThemeChange} compact={!!selectedLocation} />
+      <ThemeSelector activeTheme={activeTheme} onThemeChange={handleThemeChange} />
 
       {showModelSelector && selectedLocation && (
         <>
@@ -196,6 +195,7 @@ export function WeatherDashboard() {
           selectedLocation={selectedLocation}
           onLocationSelect={handleLocationSelect}
           settings={settings}
+          onSettingsChange={handleSettingsChange}
         />
       </div>
 

@@ -3,6 +3,7 @@
 import { Settings, commonTimezones, mapStyles, windSpeedUnits, WindSpeedUnit, MapStyle } from "@/lib/weather-types"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
+import { Settings as SettingsIcon } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
@@ -56,13 +57,9 @@ export function SettingsMenu({ settings, onSettingsChange }: SettingsMenuProps) 
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button
-          variant="outline"
-          size="icon"
-          className="fixed top-4 right-4 z-50 bg-card/90 backdrop-blur-sm border-border hover:bg-accent shadow-md"
-        >
-          <MenuIcon className="h-5 w-5" />
-          <span className="sr-only">Open settings</span>
+        <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-foreground">
+          <SettingsIcon className="h-4 w-4" />
+          <span className="sr-only">Settings</span>
         </Button>
       </SheetTrigger>
       <SheetContent className="bg-card border-border w-80 p-0 flex flex-col">
