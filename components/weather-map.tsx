@@ -1,11 +1,15 @@
 "use client"
 
 import { useRef, useCallback, useEffect, useState } from "react"
-import Map, { Marker, NavigationControl, MapRef, MapMouseEvent } from "react-map-gl/maplibre"
+import Map, { Marker, NavigationControl, Source, Layer, MapRef, MapMouseEvent } from "react-map-gl/maplibre"
 import "maplibre-gl/dist/maplibre-gl.css"
 import { capitals, Capital } from "@/lib/capitals"
 import { SelectedLocation, Settings, MapStyle } from "@/lib/weather-types"
 import { Card, CardContent } from "@/components/ui/card"
+import { X } from "lucide-react"
+import { useMapTimeStore } from "@/lib/map-time-store"
+import { TimeController } from "@/components/map/time-controller"
+import { LayerManager } from "@/components/map/layer-manager"
 
 interface WeatherMapProps {
   selectedLocation: SelectedLocation | null
@@ -33,6 +37,13 @@ export function WeatherMap({ selectedLocation, onLocationSelect, settings }: Wea
   const mapRef = useRef<MapRef>(null)
   const [isDarkMode, setIsDarkMode] = useState(false)
   const [hoverCoords, setHoverCoords] = useState<{ lat: number; lng: number; x: number; y: number } | null>(null)
+  const [introDismissed, setIntroDismissed] = useState(false)
+  const { radarFrames, radarFrameIndex, layers } = useMapTimeStore()
+
+  const currentRadarFrame = radarFrames[radarFrameIndex]
+  const radarTileUrl = currentRadarFrame
+    ? `https://tilecache.rainviewer.com${currentRadarFrame.path}/256/{z}/{x}/{y}/2/1_1.png`
+    : null
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)")
@@ -64,7 +75,7 @@ export function WeatherMap({ selectedLocation, onLocationSelect, settings }: Wea
   }, [onLocationSelect])
 
   return (
-    <div className="relative h-full w-full">
+    <div className="relative h-full w-full" onClick={() => setIntroDismissed(true)}>
       <Map
         ref={mapRef}
         initialViewState={{ longitude: 134.0, latitude: -25.0, zoom: 3.5 }}
@@ -110,7 +121,26 @@ export function WeatherMap({ selectedLocation, onLocationSelect, settings }: Wea
             <div className="w-4 h-4 rounded-full bg-accent ring-2 ring-accent/50 animate-pulse" />
           </Marker>
         )}
+
+        {layers.radar.visible && radarTileUrl && (
+          <Source
+            id="radar"
+            type="raster"
+            tiles={[radarTileUrl]}
+            tileSize={256}
+            attribution="© RainViewer"
+          >
+            <Layer
+              id="radar-layer"
+              type="raster"
+              paint={{ "raster-opacity": layers.radar.opacity }}
+            />
+          </Source>
+        )}
       </Map>
+
+      <LayerManager />
+      <TimeController />
 
       {hoverCoords && (
         <div
@@ -121,9 +151,15 @@ export function WeatherMap({ selectedLocation, onLocationSelect, settings }: Wea
         </div>
       )}
 
-      {!selectedLocation && (
+      {!introDismissed && !selectedLocation && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <Card className="pointer-events-auto bg-card/95 backdrop-blur-sm border-border shadow-lg max-w-sm mx-4">
+          <Card className="pointer-events-auto bg-card/95 backdrop-blur-sm border-border shadow-lg max-w-sm mx-4 relative">
+            <button
+              className="absolute top-2 right-2 p-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              onClick={(e) => { e.stopPropagation(); setIntroDismissed(true) }}
+            >
+              <X className="h-4 w-4" />
+            </button>
             <CardContent className="p-6 text-center">
               <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">

@@ -31,7 +31,7 @@ interface ThemeSelectorProps {
 
 export function ThemeSelector({ activeTheme, onThemeChange, compact = true }: ThemeSelectorProps) {
   return (
-    <div className="fixed right-4 top-20 z-50 flex flex-col gap-2">
+    <div className={`fixed left-4 z-50 flex flex-col gap-2 ${compact ? "top-32" : "top-20"}`}>
       {weatherThemes.map((theme) => {
         const isActive = activeTheme === theme.id
         const baseClass = `
@@ -55,7 +55,7 @@ export function ThemeSelector({ activeTheme, onThemeChange, compact = true }: Th
                   {THEME_ICONS[theme.id]}
                 </button>
               </TooltipTrigger>
-              <TooltipContent side="left">{theme.name}</TooltipContent>
+              <TooltipContent side="right">{theme.name}</TooltipContent>
             </Tooltip>
           )
         }

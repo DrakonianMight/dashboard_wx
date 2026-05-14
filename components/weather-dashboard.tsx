@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react"
 import useSWR from "swr"
+import { ChevronDown, ChevronUp } from "lucide-react"
 import { WeatherMap } from "./weather-map"
 import { WeatherChart } from "./weather-chart"
 import { SettingsMenu } from "./settings-menu"
@@ -93,6 +94,7 @@ export function WeatherDashboard() {
   const [isResizing, setIsResizing]               = useState(false)
   const [activeTheme, setActiveTheme]             = useState<ThemeId>("weather")
   const [showModelSelector, setShowModelSelector] = useState(false)
+  const [chartVisible, setChartVisible]           = useState(true)
   const resizeRef = useRef<HTMLDivElement>(null)
 
   const themeParams = weatherThemes.find(t => t.id === activeTheme)?.parameters ?? []
@@ -188,7 +190,7 @@ export function WeatherDashboard() {
 
       <div
         className="flex-1 relative min-h-0"
-        style={{ height: selectedLocation ? `calc(100vh - ${chartHeight}px)` : "100vh" }}
+        style={{ height: selectedLocation ? (chartVisible ? `calc(100vh - ${chartHeight}px)` : "calc(100vh - 12px)") : "100vh" }}
       >
         <WeatherMap
           selectedLocation={selectedLocation}
@@ -201,29 +203,42 @@ export function WeatherDashboard() {
         <>
           <div
             ref={resizeRef}
-            className={`h-2 bg-border cursor-ns-resize flex items-center justify-center hover:bg-muted-foreground/20 transition-colors ${isResizing ? "bg-muted-foreground/30" : ""}`}
-            onMouseDown={() => setIsResizing(true)}
-            onTouchStart={() => setIsResizing(true)}
+            className={`h-3 bg-border flex items-center justify-center relative hover:bg-muted-foreground/20 transition-colors ${chartVisible ? "cursor-ns-resize" : "cursor-default"} ${isResizing ? "bg-muted-foreground/30" : ""}`}
+            onMouseDown={chartVisible ? () => setIsResizing(true) : undefined}
+            onTouchStart={chartVisible ? () => setIsResizing(true) : undefined}
           >
-            <div className="w-12 h-1 rounded-full bg-muted-foreground/40" />
+            {chartVisible && <div className="w-12 h-1 rounded-full bg-muted-foreground/40" />}
+            <button
+              className="absolute right-3 flex items-center justify-center h-5 w-5 rounded-full hover:bg-muted-foreground/20 transition-colors"
+              onClick={() => setChartVisible(v => !v)}
+              onMouseDown={(e) => e.stopPropagation()}
+              onTouchStart={(e) => e.stopPropagation()}
+            >
+              {chartVisible
+                ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                : <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" />
+              }
+            </button>
           </div>
 
-          <div className="shrink-0 border-t border-border" style={{ height: chartHeight }}>
-            <WeatherChart
-              data={chartData || []}
-              parameter={selectedParameter}
-              themeParameters={themeParams}
-              onParameterChange={handleParameterChange}
-              onToggleModelSelector={() => setShowModelSelector(v => !v)}
-              showModelSelector={showModelSelector}
-              isLoading={isLoading}
-              locationName={locationName}
-              timezone={settings.timezone}
-              selectedModels={settings.selectedModels}
-              windSpeedUnit={settings.windSpeedUnit}
-              temperatureUnit={settings.temperatureUnit}
-            />
-          </div>
+          {chartVisible && (
+            <div className="shrink-0 border-t border-border" style={{ height: chartHeight }}>
+              <WeatherChart
+                data={chartData || []}
+                parameter={selectedParameter}
+                themeParameters={themeParams}
+                onParameterChange={handleParameterChange}
+                onToggleModelSelector={() => setShowModelSelector(v => !v)}
+                showModelSelector={showModelSelector}
+                isLoading={isLoading}
+                locationName={locationName}
+                timezone={settings.timezone}
+                selectedModels={settings.selectedModels}
+                windSpeedUnit={settings.windSpeedUnit}
+                temperatureUnit={settings.temperatureUnit}
+              />
+            </div>
+          )}
         </>
       )}
     </div>
